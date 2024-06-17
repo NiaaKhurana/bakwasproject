@@ -1,0 +1,83 @@
+CREATE DATABASE niaa;
+
+CREATE TABLE Principal_Database (
+                                    id INT AUTO_INCREMENT PRIMARY KEY,
+                                    UID CHAR(20) UNIQUE,
+                                    Common_Ingredient_Additive_Name VARCHAR(255),
+                                    FSSAI_Ref_Regulation_Rule_List VARCHAR(255),
+                                    Schedule_I BOOLEAN,
+                                    Schedule_II BOOLEAN,
+                                    Schedule_III BOOLEAN,
+                                    Schedule_IV BOOLEAN,
+                                    Schedule_VA BOOLEAN,
+                                    Schedule_VB BOOLEAN,
+                                    Schedule_VC BOOLEAN,
+                                    Schedule_VD BOOLEAN,
+                                    Schedule_VE BOOLEAN,
+                                    Schedule_VF BOOLEAN,
+                                    Schedule_VI BOOLEAN,
+                                    Schedule_VIE BOOLEAN,
+                                    Schedule_VII BOOLEAN,
+                                    Schedule_VIII BOOLEAN,
+                                    RSSR BOOLEAN,
+                                    BANNED BOOLEAN,
+                                    INS INT,
+                                    UpperLimit INT,
+                                    LowerLimit INT,
+                                    Unit CHAR(10),
+                                    Warning_Comment VARCHAR(255)
+);
+
+CREATE TABLE UID_Sequence (
+    seq INT NOT NULL AUTO_INCREMENT PRIMARY KEY
+);
+
+INSERT INTO UID_Sequence VALUES (NULL);
+
+CREATE TRIGGER before_insert_principal_database
+    BEFORE INSERT ON Principal_Database
+    FOR EACH ROW
+BEGIN
+    IF NEW.id IS NULL THEN
+        SET NEW.id = (SELECT IFNULL(MAX(id), 0) + 1 FROM Principal_Database);
+    END IF;
+END;
+
+CREATE TRIGGER after_insert_principal_database
+    AFTER INSERT ON Principal_Database
+    FOR EACH ROW
+BEGIN
+    UPDATE Principal_Database
+    SET UID = CONCAT('UD', NEW.id)
+    WHERE id = NEW.id;
+END;
+
+CREATE TRIGGER before_insert_principal_database
+    BEFORE INSERT ON Principal_Database
+    FOR EACH ROW
+BEGIN
+    IF NEW.id IS NULL THEN
+        SET NEW.id = (SELECT IFNULL(MAX(id), 0) + 1 FROM Principal_Database);
+    END IF;
+    INSERT INTO UID_Sequence VALUES (NULL);
+END;
+
+CREATE TRIGGER after_insert_principal_database
+    AFTER INSERT ON Principal_Database
+    FOR EACH ROW
+BEGIN
+    UPDATE Principal_Database
+    SET UID = CONCAT('UD', (SELECT seq FROM UID_Sequence WHERE seq = LAST_INSERT_ID()))
+    WHERE id = NEW.id;
+END;
+
+CREATE TABLE Users (
+                       id INT AUTO_INCREMENT PRIMARY KEY,
+                       username VARCHAR(255) NOT NULL UNIQUE,
+                       password VARCHAR(255) NOT NULL,
+                       role ENUM('admin', 'user') NOT NULL DEFAULT 'user'
+);
+INSERT INTO Users (username, password, role) VALUES ('admin', '$2a$12$7jJiMV7ehAVPnQhojc84GeucCKFGnXGYZ9bqEhR7qisgBQ./YxwQG', 'admin');
+
+
+SELECT * from niaa.Principal_Database
